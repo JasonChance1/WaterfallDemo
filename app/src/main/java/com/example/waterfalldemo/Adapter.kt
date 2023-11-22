@@ -5,25 +5,27 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.cardview.widget.CardView
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlin.random.Random
+import java.util.Random
 
-/**
- * @description:
- * @author yanglei
- * @date :2023/11/22
- * @version 1.0.0
- */
-class Adapter(private var imageList: MutableList<Int>, private val context: Context) : RecyclerView.Adapter<Adapter.ViewHolder>() {
 
+class Adapter(private val imageList: List<Int>, private val context: Context) :
+    RecyclerView.Adapter<Adapter.ViewHolder>() {
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val image: ImageView = itemView.findViewById(R.id.image)
-        val title: TextView = itemView.findViewById(R.id.title)
-        val cardView: CardView = itemView.findViewById(R.id.cardView)
-        var initialHeight: Int = 0
+        var image: ImageView
+        var title: TextView
+        var container: LinearLayoutCompat
+        var initialHeight = 0
+
+        init {
+            image = itemView.findViewById(R.id.image)
+            title = itemView.findViewById(R.id.title)
+            container = itemView.findViewById(R.id.container)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,15 +37,10 @@ class Adapter(private var imageList: MutableList<Int>, private val context: Cont
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
         val viewHolder = ViewHolder(view)
-        viewHolder.initialHeight = getRandomHeight()
+        viewHolder.initialHeight = randomHeight
         layoutParams.height = viewHolder.initialHeight
         view.layoutParams = layoutParams
-
         return viewHolder
-    }
-
-    override fun getItemCount(): Int {
-        return imageList.size
     }
 
     @SuppressLint("SetTextI18n")
@@ -54,22 +51,33 @@ class Adapter(private var imageList: MutableList<Int>, private val context: Cont
         // 在初始高度的基础上添加一个随机数
         val maxIncrement = 50 // 最大增量
         val minIncrement = 0 // 最小增量
-        val randomIncrement = Random.nextInt(maxIncrement - minIncrement + 1) + minIncrement
+        val randomIncrement = Random().nextInt(maxIncrement - minIncrement + 1) + minIncrement
         val newHeight = initialHeight + randomIncrement
 
         // 设置新的高度
-        val layoutParams = holder.cardView.layoutParams
+        val layoutParams = holder.container.layoutParams
         layoutParams.height = newHeight
-        holder.cardView.layoutParams = layoutParams
 
+        // 设置margin
+        val margin = 16 // 设置你想要的margin值
+        if (layoutParams is MarginLayoutParams) {
+            val marginLayoutParams = layoutParams
+            marginLayoutParams.setMargins(margin, margin, margin, margin)
+            holder.container.layoutParams = marginLayoutParams
+        }
         holder.image.setImageResource(imageList[position])
-        holder.title.text = "标题${position}"
+        holder.title.text = "标题$position"
     }
 
-    private fun getRandomHeight(): Int {
-        // 为初始高度设置一个随机数
-        val maxHeight = 800 // 初始最大高度
-        val minHeight = 600 // 初始最小高度
-        return Random.nextInt(maxHeight - minHeight + 1) + minHeight
+    override fun getItemCount(): Int {
+        return imageList.size
     }
+
+    private val randomHeight: Int
+        get() {
+            // 为初始高度设置一个随机数
+            val maxHeight = 800 // 初始最大高度
+            val minHeight = 600 // 初始最小高度
+            return Random().nextInt(maxHeight - minHeight + 1) + minHeight
+        }
 }
